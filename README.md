@@ -408,3 +408,10 @@ ETL
 GitHub :
 
 https://github.com/GGFabrice
+
+
+⭐ Projet Portfolio Data Engineering
+
+Ce projet démontre la capacité à concevoir une plateforme Data complète :
+
+Source → ETL → Data Warehouse → KPI → Analytics
