@@ -289,19 +289,20 @@ Analyse selon :
 - Pandas
 - SQLAlchemy
 - PostgreSQL
-
+- ETL Pipeline
 
 ## Data Warehouse
 
-- PostgreSQL
+- PostgreSQL 16
 - Star Schema
 
 
-## Versioning
+## Environnement
 
+- VS Code
 - Git
 - GitHub
-
+- Virtual Environment Python
 
 ---
 
@@ -357,6 +358,14 @@ Installer les dépendances
 
 pip install -r requirements.txt
 
+Configuration PostgreSQL
+
+CREATE DATABASE banking_dw;
+
+Configurer la connexion :
+
+database/connection.py
+
 ▶️ Exécution du pipeline
 
 Lancer :
@@ -373,45 +382,43 @@ Transformation terminée
 
 Chargement terminé avec succès
 
-🚀 Roadmap
-Phase 1 ✅
-Pipeline ETL Python
-Data Warehouse PostgreSQL
-KPIs fraude
-Phase 2 🔄
-Dockerisation
-Orchestration avec Apache Airflow
-Phase 3 🔄
-Spark / PySpark
-Traitement Big Data
-Phase 4 🔄
-Machine Learning
-Modèle de détection fraude
-Phase 5 🔄
-Dashboard Power BI
-Monitoring
-👤 Auteur
+🔮 Roadmap
+Phase 2
 
-Fabrice GNABO
+Ajout de :
+
+Apache Spark / PySpark
+traitement Big Data
+optimisation des performances
+Phase 3
+
+Orchestration :
+
+Apache Airflow
+planification automatique
+monitoring
+Phase 4
+
+Machine Learning :
+
+modèle de détection fraude
+classification des transactions
+scoring risque client
+Phase 5
+
+Visualisation :
+
+Power BI Dashboard
+tableaux de bord fraude temps réel
+👨‍💻 Auteur
+
+Gnabo Fabrice
 
 Data Engineer / Data Analyst
 
-Compétences :
-
-Data Pipeline
-Data Warehouse
-Python
-SQL
-PostgreSQL
-ETL
-
 GitHub :
-
 https://github.com/GGFabrice
 
+📌 Conclusion
 
-⭐ Projet Portfolio Data Engineering
-
-Ce projet démontre la capacité à concevoir une plateforme Data complète :
-
-Source → ETL → Data Warehouse → KPI → Analytics
+Ce projet représente une architecture complète de traitement de données bancaires, allant de l'ingestion des données jusqu'à l'analyse métier, avec une approche proche des environnements professionnels Data Engineering.
