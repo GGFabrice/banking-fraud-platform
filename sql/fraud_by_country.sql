@@ -1,17 +1,17 @@
 SELECT
-    location AS country,
+    location AS city,
 
     COUNT(*) AS total_transactions,
 
     SUM(is_fraud) AS total_frauds,
 
     ROUND(
-        (SUM(is_fraud)::numeric / COUNT(*)) * 100,
+        (SUM(is_fraud)::numeric / NULLIF(COUNT(*), 0)) * 100,
         2
     ) AS fraud_rate_percentage,
 
     SUM(
-        CASE 
+        CASE
             WHEN is_fraud = 1 THEN amount
             ELSE 0
         END

@@ -1,33 +1,29 @@
 SELECT
-    c.customer_id,
-    c.first_name,
-    c.last_name,
-    c.risk_level,
+    COUNT(*) AS total_transactions,
 
-    COUNT(f.transaction_id) AS total_transactions,
+    SUM(amount) AS total_amount,
 
-    SUM(
-        CASE WHEN f.is_fraud = 1 
-        THEN 1 ELSE 0 END
-    ) AS fraud_count,
+    SUM(is_fraud) AS total_frauds,
 
     ROUND(
-        SUM(
-            CASE WHEN f.is_fraud = 1 
-            THEN f.amount ELSE 0 END
+        (SUM(is_fraud)::numeric / NULLIF(COUNT(*), 0)) * 100,
+        2
+    ) AS fraud_rate_percentage,
+
+    SUM(
+        CASE
+            WHEN is_fraud = 1 THEN amount
+            ELSE 0
+        END
+    ) AS fraud_amount,
+
+    ROUND(
+        AVG(
+            CASE
+                WHEN is_fraud = 1 THEN amount
+            END
         ),
         2
-    ) AS fraud_amount
+    ) AS average_fraud_amount
 
-FROM fact_transactions f
-
-JOIN dim_customers c
-ON f.customer_id = c.customer_id
-
-GROUP BY
-    c.customer_id,
-    c.first_name,
-    c.last_name,
-    c.risk_level
-
-ORDER BY fraud_amount DESC;
+FROM fact_transactions;
