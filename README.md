@@ -2,9 +2,9 @@
 
 ## 📌 Présentation du projet
 
-**Banking Fraud Platform** est une plateforme Data Engineering conçue pour collecter, transformer, stocker et analyser des données de transactions bancaires afin d'identifier et de suivre les comportements frauduleux.
+**Banking Fraud Platform** est une plateforme Data Engineering conçue pour collecter, nettoyer, transformer, stocker et analyser des données de transactions bancaires afin de suivre les comportements frauduleux.
 
-Le projet simule un environnement bancaire comprenant notamment :
+Le projet simule un environnement bancaire comprenant :
 
 * des clients ;
 * des comptes bancaires ;
@@ -12,99 +12,134 @@ Le projet simule un environnement bancaire comprenant notamment :
 * des commerçants ;
 * des transactions financières.
 
-L'objectif est de construire une chaîne complète de traitement de données allant de l'ingestion des données jusqu'à leur exploitation analytique dans un **Data Warehouse PostgreSQL** et un **dashboard Power BI**.
+L'objectif est de construire une chaîne complète de traitement des données allant de la génération des données jusqu'à leur exploitation analytique dans un **Data Warehouse PostgreSQL** et un **dashboard Power BI**.
 
 ---
 
-## 🎯 Objectifs
+# 🎯 Objectifs
 
 Le projet permet de :
 
+* générer des données bancaires simulées ;
 * construire un pipeline ETL avec Python ;
-* nettoyer et transformer des données bancaires ;
+* nettoyer et transformer les données avec Pandas ;
 * concevoir un Data Warehouse analytique ;
 * implémenter un modèle dimensionnel de type **Star Schema** ;
 * charger les données dans PostgreSQL ;
-* créer des vues et des KPIs dédiés à la fraude ;
+* développer des requêtes, KPIs et vues SQL dédiés à la fraude ;
 * analyser les fraudes selon plusieurs dimensions ;
-* produire un dashboard Power BI interactif ;
-* préparer la plateforme à de futures évolutions vers le Big Data et le Machine Learning.
+* construire un dashboard Power BI interactif ;
+* versionner le projet avec Git et GitHub.
 
 ---
 
 # 🏗️ Architecture de la plateforme
 
 ```text
-                  SOURCES DE DONNÉES
-                         │
-                         ▼
-              Données bancaires
-             CSV / données simulées
-                         │
-                         ▼
-                 EXTRACTION
-                    Python
-                         │
-                         ▼
-                TRANSFORMATION
-              Python / Pandas
-                         │
-                         ▼
-                DATA WAREHOUSE
-                  PostgreSQL
-                         │
-              ┌──────────┴──────────┐
-              │                     │
-              ▼                     ▼
-         Dimensions            Table de faits
-              │                     │
-              └──────────┬──────────┘
-                         ▼
-                   Vues SQL / KPIs
-                         │
-                         ▼
-                    POWER BI
-                         │
-                         ▼
-              Dashboard Fraude Bancaire
+                 DONNÉES SIMULÉES
+                        │
+                        ▼
+                 Data Generator
+                        │
+                        ▼
+                   Extraction
+                      Python
+                        │
+                        ▼
+               Cleaning / Transformation
+                   Python / Pandas
+                        │
+                        ▼
+              DATA WAREHOUSE POSTGRESQL
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+              ▼                   ▼
+         Dimensions          Fact Transactions
+              │                   │
+              └─────────┬─────────┘
+                        ▼
+                  SQL / KPIs
+                        │
+                        ▼
+                 Power BI Dashboard
+                        │
+                        ▼
+               Analyse de la fraude
 ```
 
 ---
 
-# 🔄 Pipeline ETL
+# 🔄 Pipeline Data Engineering
 
-## 1. Extraction
+## 1. Génération des données
 
-Le pipeline récupère les différentes sources de données nécessaires à l'analyse bancaire.
+Le projet contient un module `data_generator/` permettant de générer des données bancaires simulées.
 
-Les principales entités sont :
+Les principaux générateurs sont :
 
-* Customers
-* Accounts
-* Devices
-* Merchants
-* Transactions
+* `generate_customers.py`
+* `generate_accounts.py`
+* `generate_devices.py`
+* `generate_merchants.py`
+* `generate_transactions.py`
 
-L'extraction constitue la première étape du pipeline avant le nettoyage et la transformation.
+Ces scripts permettent de créer les différentes sources nécessaires au pipeline.
 
 ---
 
-## 2. Transformation
+## 2. Extraction
 
-Les données sont ensuite nettoyées et préparées pour leur intégration dans le Data Warehouse.
+L'extraction est réalisée avec Python.
 
-Les principales opérations comprennent :
+Le module principal est :
+
+```text
+pipelines/extract.py
+```
+
+Il constitue le point d'entrée pour récupérer les données sources avant leur transformation.
+
+---
+
+## 3. Nettoyage et transformation
+
+Les données sont préparées avec Python et Pandas.
+
+Les traitements comprennent notamment :
 
 * nettoyage des données ;
+* suppression des doublons ;
 * traitement des valeurs manquantes ;
 * contrôle des types de données ;
 * transformation des attributs ;
-* création des dimensions analytiques ;
-* enrichissement des transactions ;
-* création de la dimension temporelle ;
-* préparation des indicateurs de fraude.
+* préparation des données analytiques.
 
-Les principales tables analytiques comprennent notamment :
+Les principaux modules sont :
+
+```text
+pipelines/cleaning.py
+pipelines/transformation.py
+pipelines/run_cleaning.py
+```
+
+Le pipeline global est exécuté avec :
+
+```text
+pipelines/run_pipeline.py
+```
+
+---
+
+# 🗄️ Data Warehouse
+
+Le Data Warehouse est construit avec **PostgreSQL**.
+
+Le projet utilise une modélisation dimensionnelle de type **Star Schema**.
+
+## Dimensions
+
+Les principales dimensions sont :
 
 ```text
 dim_customers
@@ -112,179 +147,127 @@ dim_accounts
 dim_devices
 dim_merchants
 dim_date
-fact_transactions
 ```
 
----
+Elles permettent d'analyser les transactions selon différents axes :
 
-## 3. Chargement
-
-Les données transformées sont chargées dans **PostgreSQL**.
-
-Le processus de chargement suit le principe :
-
-```text
-Nettoyage / Transformation
-          │
-          ▼
-   Chargement des
-      dimensions
-          │
-          ▼
-   Chargement de la
-     table de faits
-          │
-          ▼
-    Vues analytiques
-          │
-          ▼
-       Power BI
-```
-
----
-
-# 🗄️ Data Warehouse
-
-Le projet utilise une architecture dimensionnelle basée sur un **Star Schema**.
-
-## Dimensions
-
-### `dim_customers`
-
-Informations relatives aux clients.
-
-Exemples d'attributs :
-
-* customer_id
-* nom
-* âge
-* sexe
-* ville
-* pays
-
-### `dim_accounts`
-
-Informations relatives aux comptes bancaires.
-
-Exemples :
-
-* account_id
-* type de compte
-* solde
-* statut
-
-### `dim_devices`
-
-Informations relatives aux appareils utilisés lors des transactions.
-
-Exemples :
-
-* device_id
-* type d'appareil
-* système d'exploitation
-* navigateur
-
-### `dim_merchants`
-
-Informations relatives aux commerçants.
-
-Exemples :
-
-* merchant_id
-* catégorie
-* localisation
-* niveau de risque
-
-### `dim_date`
-
-Dimension temporelle utilisée pour les analyses chronologiques.
-
-Exemples :
-
-* full_date
-* day
-* month
-* year
-* quarter
-
----
+* client ;
+* compte ;
+* appareil ;
+* commerçant ;
+* temps.
 
 ## Table de faits
 
-### `fact_transactions`
+La table centrale du modèle est :
 
-La table de faits contient les événements transactionnels et les informations nécessaires à l'analyse des fraudes.
+```text
+fact_transactions
+```
 
-Exemples :
-
-* transaction_id
-* customer_id
-* account_id
-* merchant_id
-* device_id
-* transaction_type
-* amount
-* location
-* is_fraud
-* fraud_reason
+Elle contient les événements transactionnels utilisés pour les analyses de fraude.
 
 ---
 
-# 📊 Analyse des fraudes
+# 🐘 Couche PostgreSQL
 
-La plateforme permet de calculer plusieurs indicateurs clés.
+Le dossier `database/` contient les éléments nécessaires à la gestion de la base :
 
-## KPIs globaux
+```text
+database/
+├── connection.py
+├── create_tables.py
+└── __init__.py
+```
+
+Le schéma du Data Warehouse est défini dans :
+
+```text
+sql/schema.sql
+```
+
+---
+
+# 📊 Analyse SQL
+
+Le dossier `sql/` contient les requêtes utilisées pour produire les indicateurs et analyses.
+
+Principaux fichiers :
+
+```text
+sql/
+├── schema.sql
+├── views_dashboard.sql
+├── fraud_kpi_summary.sql
+├── kpi_fraud_global.sql
+├── kpi_fraud_customer.sql
+├── kpi_fraud_location.sql
+├── kpi_fraud_transaction_type.sql
+├── fraud_by_device.sql
+├── fraud_by_merchant.sql
+└── fraud_by_transaction_type.sql
+```
+
+Ces requêtes permettent notamment d'analyser :
+
+* les KPIs globaux ;
+* les fraudes par client ;
+* les fraudes par localisation ;
+* les fraudes par type de transaction ;
+* les fraudes par appareil ;
+* les fraudes par commerçant.
+
+---
+
+# 📈 KPIs de fraude
+
+La plateforme permet notamment de suivre :
 
 * nombre total de transactions ;
-* montant total des transactions ;
 * nombre total de fraudes ;
+* montant total des transactions ;
 * montant total des fraudes ;
 * taux de fraude.
 
+Les indicateurs peuvent être analysés selon plusieurs dimensions.
+
 ---
 
-## 📅 Analyse temporelle
+# 📅 Analyse temporelle
 
-Le dashboard permet d'analyser l'évolution des fraudes :
+Les données permettent d'étudier l'évolution des fraudes :
 
 * par mois ;
 * par trimestre ;
-* évolution du taux de fraude ;
-* montant des fraudes par mois ;
-* montant des fraudes par trimestre.
+* dans le temps.
 
-Les filtres interactifs permettent également de sélectionner :
+La dimension `dim_date` permet notamment de travailler avec :
 
-* une année ;
-* un trimestre ;
-* un mois.
-
----
-
-## 📍 Analyse géographique
-
-Les données permettent d'analyser les fraudes par ville.
-
-Exemples de villes analysées :
-
-* Abidjan ;
-* Bouaké ;
-* Korhogo ;
-* Yamoussoukro ;
-* San Pedro.
-
-Les indicateurs disponibles comprennent :
-
-* nombre de fraudes par ville ;
-* taux de fraude par ville ;
-* montant des fraudes par ville.
+```text
+full_date
+day
+month
+year
+quarter
+```
 
 ---
 
-## 📱 Analyse comportementale
+# 📍 Analyse géographique
 
-La plateforme est également préparée pour analyser les comportements selon :
+La plateforme permet d'analyser les fraudes selon la localisation.
+
+Les principaux indicateurs comprennent :
+
+* nombre de transactions frauduleuses ;
+* taux de fraude ;
+* montant frauduleux.
+
+---
+
+# 📱 Analyse comportementale
+
+Les données peuvent également être analysées selon :
 
 * le type d'appareil ;
 * le système d'exploitation ;
@@ -294,37 +277,17 @@ La plateforme est également préparée pour analyser les comportements selon :
 
 ---
 
-# 📈 Dashboard Power BI
+# 📊 Dashboard Power BI
 
-Le projet comprend un dashboard Power BI dédié à l'analyse des fraudes bancaires.
+Le projet comprend un dashboard Power BI dédié au suivi des fraudes bancaires.
 
-### Principaux éléments du dashboard
+Le dashboard permet notamment de :
 
-**KPIs :**
-
-* Total Transactions
-* Total Fraudes
-* Taux de fraude
-
-**Analyses temporelles :**
-
-* Répartition des fraudes par mois
-* Répartition des fraudes par trimestre
-* Montant des fraudes par mois
-* Montant des fraudes par trimestre
-* Évolution du taux de fraude
-
-**Analyses géographiques :**
-
-* Fraudes par ville
-* Taux de fraude par ville
-* Montant des fraudes par ville
-
-**Filtres interactifs :**
-
-* Année
-* Trimestre
-* Mois
+* suivre les principaux KPIs ;
+* analyser l'évolution des fraudes ;
+* analyser les montants frauduleux ;
+* comparer les différentes localisations ;
+* filtrer les données selon les dimensions temporelles.
 
 Le fichier Power BI est disponible dans :
 
@@ -336,33 +299,31 @@ dashboards/ecommerce_dashboard.pbix
 
 # 🧰 Technologies utilisées
 
-## Langages
-
-* Python 3.13
-* SQL
-
 ## Data Engineering
 
+* Python 3.13
 * Pandas
+* SQL
 * SQLAlchemy
 * PostgreSQL
-* ETL Pipeline
-
-## Data Warehouse
-
-* PostgreSQL
-* Star Schema
-* SQL Views
 
 ## Business Intelligence
 
 * Microsoft Power BI
 
-## Outils
+## Conteneurisation
 
-* Visual Studio Code
+* Docker
+* Docker Compose
+
+## Versionnement
+
 * Git
 * GitHub
+
+## Environnement de développement
+
+* Visual Studio Code
 * Python Virtual Environment
 
 ---
@@ -372,39 +333,73 @@ dashboards/ecommerce_dashboard.pbix
 ```text
 banking-fraud-platform/
 │
-├── data/
-│
-├── database/
-│   └── connection.py
-│
-├── pipelines/
-│   ├── extraction.py
-│   ├── transformation.py
-│   ├── loading.py
-│   └── run_pipeline.py
-│
-├── sql/
-│   ├── schema.sql
-│   ├── views_dashboard.sql
-│   ├── kpi_fraud_global.sql
-│   ├── kpi_fraud_customer.sql
-│   ├── fraud_by_country.sql
-│   ├── fraud_by_device.sql
-│   └── fraud_by_merchant.sql
+├── config/
 │
 ├── dashboards/
 │   └── ecommerce_dashboard.pbix
 │
-├── requirements.txt
+├── data/
+│
+├── data_generator/
+│   ├── generate_accounts.py
+│   ├── generate_all.py
+│   ├── generate_customers.py
+│   ├── generate_devices.py
+│   ├── generate_merchants.py
+│   ├── generate_transactions.py
+│   └── __init__.py
+│
+├── database/
+│   ├── connection.py
+│   ├── create_tables.py
+│   └── __init__.py
+│
+├── docs/
+│
+├── pipelines/
+│   ├── cleaning.py
+│   ├── extract.py
+│   ├── fraud_detection.py
+│   ├── loading.py
+│   ├── run_cleaning.py
+│   ├── run_pipeline.py
+│   ├── test_transformation.py
+│   ├── transformation.py
+│   └── __init__.py
+│
+├── sql/
+│   ├── fraud_by_device.sql
+│   ├── fraud_by_merchant.sql
+│   ├── fraud_by_transaction_type.sql
+│   ├── fraud_kpi_summary.sql
+│   ├── kpi_fraud_customer.sql
+│   ├── kpi_fraud_global.sql
+│   ├── kpi_fraud_location.sql
+│   ├── kpi_fraud_transaction_type.sql
+│   ├── kpi_transactions.sql
+│   ├── schema.sql
+│   └── views_dashboard.sql
+│
+├── tests/
+│
+├── warehouse/
+│   ├── models/
+│   └── __init__.py
+│
+├── .env
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
 ├── README.md
-└── .gitignore
+├── requirements.txt
+└── test_connection.py
 ```
 
 ---
 
 # ⚙️ Installation
 
-## 1. Cloner le projet
+## 1. Cloner le repository
 
 ```bash
 git clone https://github.com/GGFabrice/banking-fraud-platform.git
@@ -417,7 +412,7 @@ cd banking-fraud-platform
 python -m venv venv
 ```
 
-### Windows
+Sous Windows :
 
 ```bash
 venv\Scripts\activate
@@ -439,13 +434,13 @@ Créer la base de données :
 CREATE DATABASE banking_dw;
 ```
 
-Configurer ensuite les paramètres de connexion dans :
+Les paramètres de connexion sont configurés dans :
 
 ```text
 database/connection.py
 ```
 
-Paramètres utilisés dans l'environnement du projet :
+Configuration utilisée dans l'environnement du projet :
 
 ```text
 Host     : localhost
@@ -454,47 +449,82 @@ Database : banking_dw
 User     : postgres
 ```
 
+> Les informations sensibles telles que les mots de passe doivent être conservées dans les variables d'environnement et ne doivent pas être publiées sur GitHub.
+
 ---
 
 # ▶️ Exécution du pipeline
 
-Le pipeline peut être lancé avec :
+Le pipeline principal peut être lancé avec :
 
 ```bash
 python -m pipelines.run_pipeline
 ```
 
-Le processus exécute les différentes étapes :
+Le processus suit la chaîne :
 
 ```text
+Génération des données
+        ↓
 Extraction
-     ↓
+        ↓
+Cleaning
+        ↓
 Transformation
-     ↓
-Chargement
-     ↓
+        ↓
+Chargement PostgreSQL
+        ↓
 Data Warehouse
-     ↓
-Vues SQL
-     ↓
+        ↓
+Vues SQL / KPIs
+        ↓
 Power BI
 ```
 
 ---
 
-# 🔮 Roadmap
+# 🧪 Tests
+
+Le projet contient également des éléments dédiés aux tests :
+
+```text
+tests/
+pipelines/test_transformation.py
+test_connection.py
+```
+
+Ils permettent notamment de vérifier la connexion et certains traitements du pipeline.
+
+---
+
+# 🐳 Docker
+
+Le projet contient également :
+
+```text
+Dockerfile
+docker-compose.yml
+```
+
+Cette couche permet de préparer le projet à une exécution dans un environnement conteneurisé.
+
+---
+
+# 🚀 Roadmap
 
 ## Phase 1 — Data Engineering
 
+✅ Génération des données
+
 ✅ Pipeline ETL Python
 
-✅ Nettoyage et transformation des données
+✅ Nettoyage et transformation
 
 ✅ Data Warehouse PostgreSQL
 
-✅ Modèle Star Schema
+✅ Star Schema
 
-✅ Vues SQL analytiques
+✅ Vues SQL
 
 ---
 
@@ -514,33 +544,33 @@ Power BI
 
 ## Phase 3 — Big Data
 
-Prévoir l'intégration de :
+Prochaine évolution :
 
 * Apache Spark ;
 * PySpark ;
-* traitement de volumes importants ;
-* optimisation des traitements ;
-* Spark SQL.
+* Spark SQL ;
+* traitement de volumes plus importants ;
+* optimisation des traitements.
 
 ---
 
 ## Phase 4 — Orchestration
 
-Prévoir l'intégration de :
+Évolution prévue avec :
 
 * Apache Airflow ;
-* planification automatique des pipelines ;
+* planification automatique ;
 * monitoring ;
 * gestion des erreurs ;
-* scheduling.
+* scheduling des pipelines.
 
 ---
 
 ## Phase 5 — Machine Learning
 
-Prévoir :
+Évolution possible vers :
 
-* modèle de détection automatique de fraude ;
+* détection automatique de fraude ;
 * classification des transactions ;
 * scoring du risque ;
 * détection d'anomalies ;
@@ -548,7 +578,7 @@ Prévoir :
 
 ---
 
-## Phase 6 — Architecture temps réel
+## Phase 6 — Temps réel et Cloud
 
 Évolution possible vers :
 
@@ -556,7 +586,7 @@ Prévoir :
 * Spark Structured Streaming ;
 * traitement des transactions en temps réel ;
 * détection de fraude quasi temps réel ;
-* architecture cloud AWS.
+* architecture AWS.
 
 ---
 
@@ -572,18 +602,18 @@ GitHub : **GGFabrice**
 
 # 📌 Conclusion
 
-**Banking Fraud Platform** constitue un projet complet de Data Engineering appliqué au domaine bancaire.
+**Banking Fraud Platform** est un projet Data Engineering appliqué au domaine bancaire.
 
-Il couvre l'ensemble de la chaîne de valeur de la donnée :
+Il couvre une grande partie de la chaîne de valeur de la donnée :
 
 ```text
-Données brutes
+Données simulées
       ↓
 Extraction
       ↓
 Transformation
       ↓
-Data Warehouse
+Data Warehouse PostgreSQL
       ↓
 SQL / KPIs
       ↓
@@ -592,4 +622,4 @@ Power BI
 Analyse de la fraude
 ```
 
-Le projet constitue également une base évolutive permettant d'intégrer ultérieurement **Spark, Airflow, Kafka, Machine Learning et AWS** afin de construire une plateforme de détection de fraude plus avancée.
+Le projet constitue également une base évolutive vers une architecture plus avancée intégrant **Spark, Airflow, Kafka, Machine Learning et AWS**.
