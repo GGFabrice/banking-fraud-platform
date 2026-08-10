@@ -19,3 +19,11 @@ __pycache__/
 
 # Windows
 Thumbs.db
+# Environnement virtuel WSL
+.venv/
+
+# Données générées par Spark
+data/curated/
+
+# Données de test Spark
+data/test_spark_wsl/
